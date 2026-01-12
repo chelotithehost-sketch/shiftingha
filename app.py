@@ -8,6 +8,8 @@ from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
 import io
 import json
+import os
+from pathlib import Path
 
 # Page config
 st.set_page_config(
@@ -40,73 +42,114 @@ st.markdown("""
         font-size: 2em;
         font-weight: bold;
     }
+    .success-message {
+        padding: 10px;
+        background-color: #10B981;
+        color: white;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
+    .error-message {
+        padding: 10px;
+        background-color: #EF4444;
+        color: white;
+        border-radius: 5px;
+        margin: 10px 0;
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
-if 'team_members' not in st.session_state:
-    st.session_state.team_members = {
-        'Tickets': [
-            {'name': 'Russell', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Jasper', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Simphiwe', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Zaheyd', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Joanitha', 'location': 'Kenya', 'whmcs': 'HA and Cloud'},
-            {'name': 'Raul', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Daniel', 'location': 'Kenya', 'whmcs': 'HA and Cloud'},
-            {'name': 'Khyati', 'location': 'India', 'whmcs': 'HA and Cloud'},
-            {'name': 'Tarryn', 'location': 'South Africa', 'whmcs': 'HA and Cloud'}
-        ],
-        'Chats': [
-            {'name': 'Sipho', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Monicah', 'location': 'Kenya', 'whmcs': 'HA'},
-            {'name': 'Matthew', 'location': 'Kenya', 'whmcs': 'HA'},
-            {'name': 'Noma', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Alex', 'location': 'Kenya', 'whmcs': 'HA and Cloud'},
-            {'name': 'Simphiwe', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Jessica', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Mduduzi', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Ntobz', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Andile', 'location': 'South Africa', 'whmcs': 'HA and Cloud'},
-            {'name': 'Avha', 'location': 'South Africa', 'whmcs': 'HA and Cloud'}
-        ],
-        'Abuse': [
-            {'name': 'Victor', 'location': 'India', 'whmcs': 'HA'},
-            {'name': 'Angelo', 'location': 'Kenya', 'whmcs': 'HA and Cloud'}
-        ],
-        'Early Shift': [
-            {'name': 'Athira', 'location': 'India', 'whmcs': 'HA and Cloud'}
-        ],
-        'Nightshift': [
-            {'name': 'Victor', 'location': 'India', 'whmcs': 'HA'},
-            {'name': 'Monicah', 'location': 'Kenya', 'whmcs': 'HA'}
-        ],
-        'Layover': [
-            {'name': 'Josh', 'location': 'Kenya', 'whmcs': 'HA and Cloud'}
-        ],
-        'Leave': [
-            {'name': 'Matthew', 'location': 'Kenya', 'whmcs': 'HA and Cloud'}
-        ],
-        'DomainKing': [
-            {'name': 'Anaximene', 'location': 'India', 'whmcs': 'DK and DK'},
-            {'name': 'Kristina', 'location': 'India', 'whmcs': 'DK and DK'},
-            {'name': 'Susmishma', 'location': 'India', 'whmcs': 'DK'},
-            {'name': 'Vicky', 'location': 'India', 'whmcs': 'DK'},
-            {'name': 'Binod', 'location': 'India', 'whmcs': 'DK'}
-        ]
+# File paths for persistent storage
+DATA_DIR = Path("data")
+DATA_DIR.mkdir(exist_ok=True)
+MEMBERS_FILE = DATA_DIR / "team_members.json"
+SCHEDULE_FILE = DATA_DIR / "shift_schedule.json"
+SETTINGS_FILE = DATA_DIR / "settings.json"
+
+# Data management functions
+def load_team_members():
+    """Load team members from JSON file"""
+    if MEMBERS_FILE.exists():
+        try:
+            with open(MEMBERS_FILE, 'r') as f:
+                data = json.load(f)
+                # Ensure data is valid
+                if isinstance(data, dict):
+                    return data
+        except Exception as e:
+            st.error(f"Error loading team members: {e}")
+    
+    # Return empty structure if file doesn't exist or is invalid
+    return {}
+
+def save_team_members(team_members):
+    """Save team members to JSON file"""
+    try:
+        with open(MEMBERS_FILE, 'w') as f:
+            json.dump(team_members, f, indent=2)
+        return True
+    except Exception as e:
+        st.error(f"Error saving team members: {e}")
+        return False
+
+def load_shift_schedule():
+    """Load shift schedule from JSON file"""
+    if SCHEDULE_FILE.exists():
+        try:
+            with open(SCHEDULE_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            st.error(f"Error loading shift schedule: {e}")
+    return {}
+
+def save_shift_schedule(shift_schedule):
+    """Save shift schedule to JSON file"""
+    try:
+        with open(SCHEDULE_FILE, 'w') as f:
+            json.dump(shift_schedule, f, indent=2)
+        return True
+    except Exception as e:
+        st.error(f"Error saving shift schedule: {e}")
+        return False
+
+def load_settings():
+    """Load app settings from JSON file"""
+    if SETTINGS_FILE.exists():
+        try:
+            with open(SETTINGS_FILE, 'r') as f:
+                return json.load(f)
+        except Exception as e:
+            st.error(f"Error loading settings: {e}")
+    return {
+        'current_month': datetime.now().month,
+        'current_year': datetime.now().year
     }
 
+def save_settings(settings):
+    """Save app settings to JSON file"""
+    try:
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(settings, f, indent=2)
+        return True
+    except Exception as e:
+        st.error(f"Error saving settings: {e}")
+        return False
+
+# Initialize session state with persistent data
+if 'team_members' not in st.session_state:
+    st.session_state.team_members = load_team_members()
+
 if 'shift_schedule' not in st.session_state:
-    # Initialize with sample data for January 2025
-    st.session_state.shift_schedule = {}
-    for team, members in st.session_state.team_members.items():
-        for member in members:
-            # Initialize 31 days with default values (0 = off, 1 = regular, 2 = 8hr, 3 = 12hr, 4 = special)
-            st.session_state.shift_schedule[member['name']] = [0] * 31
+    st.session_state.shift_schedule = load_shift_schedule()
+
+if 'settings' not in st.session_state:
+    st.session_state.settings = load_settings()
 
 if 'current_month' not in st.session_state:
-    st.session_state.current_month = datetime.now().month
-    st.session_state.current_year = datetime.now().year
+    st.session_state.current_month = st.session_state.settings.get('current_month', datetime.now().month)
+
+if 'current_year' not in st.session_state:
+    st.session_state.current_year = st.session_state.settings.get('current_year', datetime.now().year)
 
 # Helper functions
 def get_days_in_month(year, month):
@@ -134,8 +177,90 @@ def get_shift_label(shift_type):
     }
     return labels.get(shift_type, '')
 
+def update_shift(member_name, day, shift_type):
+    """Update a shift and save to file"""
+    if member_name not in st.session_state.shift_schedule:
+        st.session_state.shift_schedule[member_name] = [0] * 31
+    
+    if day < len(st.session_state.shift_schedule[member_name]):
+        st.session_state.shift_schedule[member_name][day] = shift_type
+        save_shift_schedule(st.session_state.shift_schedule)
+
+def add_team_member(team_name, member_data):
+    """Add a new team member and save"""
+    if team_name not in st.session_state.team_members:
+        st.session_state.team_members[team_name] = []
+    
+    # Check if member already exists
+    existing_names = [m['name'] for m in st.session_state.team_members[team_name]]
+    if member_data['name'] in existing_names:
+        return False, "Member already exists in this team"
+    
+    st.session_state.team_members[team_name].append(member_data)
+    
+    # Initialize schedule for new member
+    st.session_state.shift_schedule[member_data['name']] = [0] * 31
+    
+    # Save both files
+    save_team_members(st.session_state.team_members)
+    save_shift_schedule(st.session_state.shift_schedule)
+    
+    return True, "Member added successfully"
+
+def remove_team_member(team_name, member_name):
+    """Remove a team member and save"""
+    if team_name in st.session_state.team_members:
+        st.session_state.team_members[team_name] = [
+            m for m in st.session_state.team_members[team_name] 
+            if m['name'] != member_name
+        ]
+        
+        # Remove empty teams
+        if len(st.session_state.team_members[team_name]) == 0:
+            del st.session_state.team_members[team_name]
+        
+        # Remove from schedule
+        if member_name in st.session_state.shift_schedule:
+            del st.session_state.shift_schedule[member_name]
+        
+        # Save both files
+        save_team_members(st.session_state.team_members)
+        save_shift_schedule(st.session_state.shift_schedule)
+        
+        return True, "Member removed successfully"
+    
+    return False, "Team not found"
+
+def add_new_team(team_name):
+    """Add a new team category"""
+    if team_name and team_name not in st.session_state.team_members:
+        st.session_state.team_members[team_name] = []
+        save_team_members(st.session_state.team_members)
+        return True, f"Team '{team_name}' created successfully"
+    elif team_name in st.session_state.team_members:
+        return False, f"Team '{team_name}' already exists"
+    return False, "Team name cannot be empty"
+
+def delete_team(team_name):
+    """Delete an entire team"""
+    if team_name in st.session_state.team_members:
+        # Remove all members from schedule
+        for member in st.session_state.team_members[team_name]:
+            if member['name'] in st.session_state.shift_schedule:
+                del st.session_state.shift_schedule[member['name']]
+        
+        # Remove team
+        del st.session_state.team_members[team_name]
+        
+        # Save both files
+        save_team_members(st.session_state.team_members)
+        save_shift_schedule(st.session_state.shift_schedule)
+        
+        return True, f"Team '{team_name}' deleted successfully"
+    return False, "Team not found"
+
 def create_excel_grid(year, month):
-    """Create Excel file with grid view similar to the uploaded image"""
+    """Create Excel file with grid view"""
     wb = Workbook()
     ws = wb.active
     ws.title = f"{calendar.month_name[month]} {year}"
@@ -153,7 +278,7 @@ def create_excel_grid(year, month):
     )
     
     # Headers - Days row
-    ws['A1'] = f'Jan-{str(year)[-2:]}'
+    ws['A1'] = f'{calendar.month_abbr[month]}-{str(year)[-2:]}'
     ws['A1'].fill = PatternFill(start_color='FFFF00', end_color='FFFF00', fill_type='solid')
     ws['A1'].font = Font(bold=True, size=10)
     ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
@@ -228,7 +353,7 @@ def create_excel_grid(year, month):
     return wb
 
 def create_excel_card_view(year, month, start_day, end_day):
-    """Create Excel file with card/section view similar to second uploaded image"""
+    """Create Excel file with card/section view"""
     wb = Workbook()
     ws = wb.active
     ws.title = f"{start_day}th-{end_day}th"
@@ -240,120 +365,52 @@ def create_excel_card_view(year, month, start_day, end_day):
     ws['A1'].alignment = Alignment(horizontal='center', vertical='center')
     
     current_row = 3
+    col_index = 1
     
-    # HostAfrica/Cloud Section
-    ws.cell(row=current_row, column=1, value='HostAfrica/Cloud')
-    ws.cell(row=current_row, column=1).fill = PatternFill(start_color='87CEEB', end_color='87CEEB', fill_type='solid')
-    ws.cell(row=current_row, column=1).font = Font(bold=True, size=12, color='FFFFFF')
-    ws.merge_cells(f'A{current_row}:D{current_row}')
-    current_row += 1
-    
-    # Tickets section
-    ws.cell(row=current_row, column=1, value='Tickets')
-    ws.cell(row=current_row, column=1).fill = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
-    ws.cell(row=current_row, column=1).font = Font(bold=True, color='FFFFFF')
-    current_row += 1
-    
-    for member in st.session_state.team_members['Tickets']:
-        ws.cell(row=current_row, column=1, value=f"Name: {member['name']}")
-        ws.cell(row=current_row, column=1).fill = PatternFill(start_color='90EE90', end_color='90EE90', fill_type='solid')
-        ws.cell(row=current_row, column=1).font = Font(size=9)
+    # Process each team
+    for team, members in st.session_state.team_members.items():
+        # Team header
+        ws.cell(row=current_row, column=col_index, value=team)
+        ws.cell(row=current_row, column=col_index).fill = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
+        ws.cell(row=current_row, column=col_index).font = Font(bold=True, color='FFFFFF', size=11)
+        current_row += 1
         
-        ws.cell(row=current_row + 1, column=1, value=f"Title: Support Technician")
-        ws.cell(row=current_row + 1, column=1).font = Font(size=8)
-        
-        ws.cell(row=current_row + 2, column=1, value=f"Location: {member['location']}")
-        ws.cell(row=current_row + 2, column=1).font = Font(size=8)
-        
-        ws.cell(row=current_row + 3, column=1, value=f"WHMCS: {member['whmcs']}")
-        ws.cell(row=current_row + 3, column=1).font = Font(size=8)
-        
-        current_row += 5
-    
-    # Chats section
-    ws.cell(row=current_row, column=2, value='Chats')
-    ws.cell(row=current_row, column=2).fill = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
-    ws.cell(row=current_row, column=2).font = Font(bold=True, color='FFFFFF')
-    current_row += 1
-    
-    chat_row_start = current_row
-    for member in st.session_state.team_members['Chats']:
-        ws.cell(row=current_row, column=2, value=f"Name: {member['name']}")
-        ws.cell(row=current_row, column=2).fill = PatternFill(start_color='90EE90', end_color='90EE90', fill_type='solid')
-        ws.cell(row=current_row, column=2).font = Font(size=9)
-        
-        ws.cell(row=current_row + 1, column=2, value=f"Title: Support Technician")
-        ws.cell(row=current_row + 1, column=2).font = Font(size=8)
-        
-        ws.cell(row=current_row + 2, column=2, value=f"Location: {member['location']}")
-        ws.cell(row=current_row + 2, column=2).font = Font(size=8)
-        
-        ws.cell(row=current_row + 3, column=2, value=f"WHMCS: {member['whmcs']}")
-        ws.cell(row=current_row + 3, column=2).font = Font(size=8)
-        
-        current_row += 5
-    
-    # Add other sections (Abuse, Early Shift, Nightshift, etc.)
-    special_sections = ['Abuse', 'Early Shift', 'Nightshift', 'Layover', 'Leave']
-    col = 3
-    for section in special_sections:
-        if section in st.session_state.team_members:
-            ws.cell(row=3, column=col, value=section)
-            ws.cell(row=3, column=col).fill = PatternFill(start_color='808080', end_color='808080', fill_type='solid')
-            ws.cell(row=3, column=col).font = Font(bold=True, color='FFFFFF')
+        # Team members
+        for member in members:
+            ws.cell(row=current_row, column=col_index, value=f"Name: {member['name']}")
+            ws.cell(row=current_row, column=col_index).fill = PatternFill(start_color='90EE90', end_color='90EE90', fill_type='solid')
+            ws.cell(row=current_row, column=col_index).font = Font(size=9, bold=True)
             
-            row = 4
-            for member in st.session_state.team_members[section]:
-                ws.cell(row=row, column=col, value=f"Name: {member['name']}")
-                ws.cell(row=row, column=col).fill = PatternFill(start_color='D3D3D3', end_color='D3D3D3', fill_type='solid')
-                ws.cell(row=row, column=col).font = Font(size=9)
-                
-                ws.cell(row=row + 1, column=col, value=f"Title: Support Technician")
-                ws.cell(row=row + 1, column=col).font = Font(size=8)
-                
-                ws.cell(row=row + 2, column=col, value=f"Location: {member['location']}")
-                ws.cell(row=row + 2, column=col).font = Font(size=8)
-                
-                ws.cell(row=row + 3, column=col, value=f"WHMCS: {member['whmcs']}")
-                ws.cell(row=row + 3, column=col).font = Font(size=8)
-                
-                row += 5
-    
-    # DomainKing Section
-    current_row = max(current_row, chat_row_start + len(st.session_state.team_members['Chats']) * 5) + 2
-    ws.cell(row=current_row, column=4, value='DomainKing')
-    ws.cell(row=current_row, column=4).fill = PatternFill(start_color='87CEEB', end_color='87CEEB', fill_type='solid')
-    ws.cell(row=current_row, column=4).font = Font(bold=True, size=12, color='FFFFFF')
-    current_row += 1
-    
-    for member in st.session_state.team_members['DomainKing']:
-        ws.cell(row=current_row, column=4, value=f"Name: {member['name']}")
-        ws.cell(row=current_row, column=4).fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
-        ws.cell(row=current_row, column=4).font = Font(size=9, color='FFFFFF', bold=True)
+            ws.cell(row=current_row + 1, column=col_index, value=f"Location: {member['location']}")
+            ws.cell(row=current_row + 1, column=col_index).font = Font(size=8)
+            
+            ws.cell(row=current_row + 2, column=col_index, value=f"WHMCS: {member['whmcs']}")
+            ws.cell(row=current_row + 2, column=col_index).font = Font(size=8)
+            
+            current_row += 4
         
-        ws.cell(row=current_row + 1, column=4, value=f"Title: Support Technician")
-        ws.cell(row=current_row + 1, column=4).fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
-        ws.cell(row=current_row + 1, column=4).font = Font(size=8, color='FFFFFF')
+        current_row += 2  # Space between teams
         
-        ws.cell(row=current_row + 2, column=4, value=f"Location: {member['location']}")
-        ws.cell(row=current_row + 2, column=4).fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
-        ws.cell(row=current_row + 2, column=4).font = Font(size=8, color='FFFFFF')
-        
-        ws.cell(row=current_row + 3, column=4, value=f"WHMCS: {member['whmcs']}")
-        ws.cell(row=current_row + 3, column=4).fill = PatternFill(start_color='FFA500', end_color='FFA500', fill_type='solid')
-        ws.cell(row=current_row + 3, column=4).font = Font(size=8, color='FFFFFF')
-        
-        current_row += 5
+        # Move to next column after certain number of rows
+        if current_row > 50:
+            current_row = 4
+            col_index += 1
     
     # Adjust column widths
-    for col in range(1, 5):
+    for col in range(1, col_index + 1):
         ws.column_dimensions[get_column_letter(col)].width = 25
     
     return wb
 
 # Main app layout
 st.title("📅 Shift Schedule Manager")
-st.markdown("### Comprehensive Team Management System")
+st.markdown("### Blank Template - Build Your Own Team")
+
+# Check if data exists
+total_members = sum(len(members) for members in st.session_state.team_members.values())
+
+if total_members == 0:
+    st.info("👋 Welcome! Start by creating your first team and adding members below.")
 
 # Sidebar
 with st.sidebar:
@@ -369,268 +426,381 @@ with st.sidebar:
     st.session_state.current_month = months.index(selected_month) + 1
     st.session_state.current_year = selected_year
     
+    # Save settings
+    st.session_state.settings['current_month'] = st.session_state.current_month
+    st.session_state.settings['current_year'] = st.session_state.current_year
+    save_settings(st.session_state.settings)
+    
     st.divider()
     
     # View options
     st.header("📊 View Options")
-    view_type = st.radio("Select View", ["Grid View", "Card View", "Team Summary", "Add Member"])
+    view_type = st.radio("Select View", ["Team Setup", "Grid View", "Card View", "Team Summary"])
     
     st.divider()
     
     # Export options
     st.header("📥 Export")
-    if st.button("Generate Grid Excel", use_container_width=True):
-        wb = create_excel_grid(st.session_state.current_year, st.session_state.current_month)
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-        
-        st.download_button(
-            label="Download Grid Excel",
-            data=buffer,
-            file_name=f"shift_schedule_grid_{selected_month}_{selected_year}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
     
-    # Week selector for card view
-    week_range = st.selectbox("Select Week for Card View", 
-                             ["1st-5th", "8th-12th", "15th-19th", "22nd-26th", "29th-31st"])
+    if total_members > 0:
+        if st.button("Generate Grid Excel", use_container_width=True):
+            wb = create_excel_grid(st.session_state.current_year, st.session_state.current_month)
+            buffer = io.BytesIO()
+            wb.save(buffer)
+            buffer.seek(0)
+            
+            st.download_button(
+                label="Download Grid Excel",
+                data=buffer,
+                file_name=f"shift_schedule_grid_{selected_month}_{selected_year}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+        
+        # Week selector for card view
+        week_range = st.selectbox("Select Week for Card View", 
+                                 ["1st-5th", "8th-12th", "15th-19th", "22nd-26th", "29th-31st"])
+        
+        if st.button("Generate Card Excel", use_container_width=True):
+            start_day = int(week_range.split('-')[0].replace('st', '').replace('th', '').replace('nd', '').replace('rd', ''))
+            end_day = int(week_range.split('-')[1].replace('st', '').replace('th', '').replace('nd', '').replace('rd', ''))
+            
+            wb = create_excel_card_view(st.session_state.current_year, st.session_state.current_month, 
+                                        start_day, end_day)
+            buffer = io.BytesIO()
+            wb.save(buffer)
+            buffer.seek(0)
+            
+            st.download_button(
+                label="Download Card Excel",
+                data=buffer,
+                file_name=f"shift_schedule_card_{week_range}_{selected_month}_{selected_year}.xlsx",
+                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+            )
+    else:
+        st.warning("Add team members first to export")
     
-    if st.button("Generate Card Excel", use_container_width=True):
-        start_day = int(week_range.split('-')[0].replace('st', '').replace('th', '').replace('nd', '').replace('rd', ''))
-        end_day = int(week_range.split('-')[1].replace('st', '').replace('th', '').replace('nd', '').replace('rd', ''))
-        
-        wb = create_excel_card_view(st.session_state.current_year, st.session_state.current_month, 
-                                    start_day, end_day)
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-        
-        st.download_button(
-            label="Download Card Excel",
-            data=buffer,
-            file_name=f"shift_schedule_card_{week_range}_{selected_month}_{selected_year}.xlsx",
-            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-        )
+    st.divider()
+    
+    # Data management
+    st.header("💾 Data Management")
+    
+    if st.button("🔄 Reload Data", use_container_width=True):
+        st.session_state.team_members = load_team_members()
+        st.session_state.shift_schedule = load_shift_schedule()
+        st.rerun()
+    
+    st.caption("💡 All changes are automatically saved to JSON files in the 'data' folder")
 
 # Main content area
-if view_type == "Grid View":
-    st.header(f"📊 Shift Schedule - {selected_month} {selected_year}")
+if view_type == "Team Setup":
+    st.header("👥 Team & Member Management")
     
-    # Stats
-    col1, col2, col3, col4 = st.columns(4)
-    total_members = sum(len(members) for members in st.session_state.team_members.values())
-    
-    with col1:
-        st.metric("Total Members", total_members)
-    with col2:
-        st.metric("Tickets Team", len(st.session_state.team_members['Tickets']))
-    with col3:
-        st.metric("Chats Team", len(st.session_state.team_members['Chats']))
-    with col4:
-        days = get_days_in_month(selected_year, st.session_state.current_month)
-        st.metric("Days in Month", days)
-    
-    st.divider()
-    
-    # Team filter
-    team_filter = st.multiselect("Filter by Team", 
-                                list(st.session_state.team_members.keys()), 
-                                default=["Tickets", "Chats"])
-    
-    # Create schedule grid
-    days = get_days_in_month(selected_year, st.session_state.current_month)
-    
-    # Build dataframe for display
-    schedule_data = []
-    for team in team_filter:
-        for member in st.session_state.team_members[team]:
-            row = {' 'Member': member['name'], 'Team': team, 'Location': member['location']}
-            schedule = st.session_state.shift_schedule.get(member['name'], [0] * days)
-            for day in range(1, days + 1):
-                shift_type = schedule[day - 1] if day - 1 < len(schedule) else 0
-                row[f'Day {day}'] = get_shift_label(shift_type)
-            schedule_data.append(row)
-    
-    if schedule_data:
-        df = pd.DataFrame(schedule_data)
-        
-        # Style the dataframe
-        def color_cells(val):
-            if val == 'T':
-                return 'background-color: #9333EA; color: white; font-weight: bold'
-            elif val == '8':
-                return 'background-color: #F59E0B; color: white; font-weight: bold'
-            elif val == '12':
-                return 'background-color: #3B82F6; color: white; font-weight: bold'
-            elif val == 'S':
-                return 'background-color: #10B981; color: white; font-weight: bold'
-            elif val == 'O':
-                return 'background-color: #06B6D4; color: white; font-weight: bold'
-            return ''
-        
-        styled_df = df.style.applymap(color_cells, subset=[col for col in df.columns if col.startswith('Day')])
-        st.dataframe(styled_df, use_container_width=True, height=600)
-    else:
-        st.info("No team members selected. Please select teams from the filter above.")
-    
-    # Legend
-    st.divider()
-    st.subheader("Legend")
-    legend_cols = st.columns(5)
-    with legend_cols[0]:
-        st.markdown("🟣 **T** - Regular Ticket/Chat")
-    with legend_cols[1]:
-        st.markdown("🟠 **8** - 8-Hour Shift")
-    with legend_cols[2]:
-        st.markdown("🔵 **12** - 12-Hour Shift")
-    with legend_cols[3]:
-        st.markdown("🟢 **S** - Special Shift")
-    with legend_cols[4]:
-        st.markdown("🔷 **O** - Operations")
-
-elif view_type == "Card View":
-    st.header(f"📋 Team Overview - {week_range}")
-    
-    # HostAfrica/Cloud Section
-    st.subheader("🌐 HostAfrica/Cloud")
-    
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.markdown("#### Tickets Team")
-        for member in st.session_state.team_members['Tickets']:
-            with st.expander(f"👤 {member['name']}"):
-                st.write(f"**Title:** Support Technician")
-                st.write(f"**Location:** {member['location']}")
-                st.write(f"**WHMCS:** {member['whmcs']}")
-    
-    with col2:
-        st.markdown("#### Chats Team")
-        for member in st.session_state.team_members['Chats']:
-            with st.expander(f"👤 {member['name']}"):
-                st.write(f"**Title:** Support Technician")
-                st.write(f"**Location:** {member['location']}")
-                st.write(f"**WHMCS:** {member['whmcs']}")
-    
-    st.divider()
-    
-    # Special Roles
-    st.subheader("⚡ Special Roles")
-    
-    special_cols = st.columns(3)
-    special_teams = ['Abuse', 'Early Shift', 'Nightshift', 'Layover', 'Leave']
-    
-    for idx, team in enumerate(special_teams):
-        if team in st.session_state.team_members:
-            with special_cols[idx % 3]:
-                st.markdown(f"#### {team}")
-                for member in st.session_state.team_members[team]:
-                    with st.expander(f"👤 {member['name']}"):
-                        st.write(f"**Location:** {member['location']}")
-                        st.write(f"**WHMCS:** {member['whmcs']}")
-    
-    st.divider()
-    
-    # DomainKing Section
-    st.subheader("👑 DomainKing Team")
-    dk_cols = st.columns(3)
-    for idx, member in enumerate(st.session_state.team_members['DomainKing']):
-        with dk_cols[idx % 3]:
-            st.markdown(f"""
-            <div style='background-color: #F59E0B; padding: 15px; border-radius: 10px; margin-bottom: 10px;'>
-                <h4 style='color: white; margin: 0;'>{member['name']}</h4>
-                <p style='color: white; margin: 5px 0;'><strong>Title:</strong> Support Technician</p>
-                <p style='color: white; margin: 5px 0;'><strong>Location:</strong> {member['location']}</p>
-                <p style='color: white; margin: 5px 0;'><strong>WHMCS:</strong> {member['whmcs']}</p>
-            </div>
-            """, unsafe_allow_html=True)
-
-elif view_type == "Team Summary":
-    st.header("📊 Team Statistics")
-    
-    # Overall stats
+    # Stats at top
     col1, col2, col3 = st.columns(3)
     with col1:
         st.metric("Total Teams", len(st.session_state.team_members))
     with col2:
-        st.metric("Total Members", sum(len(members) for members in st.session_state.team_members.values()))
+        st.metric("Total Members", total_members)
     with col3:
-        st.metric("Active Month", f"{selected_month} {selected_year}")
+        st.metric("Data Status", "✅ Saved" if MEMBERS_FILE.exists() else "❌ Not Saved")
     
     st.divider()
     
-    # Team breakdown
-    for team, members in st.session_state.team_members.items():
-        with st.expander(f"**{team}** ({len(members)} members)", expanded=True):
-            team_df = pd.DataFrame(members)
-            st.dataframe(team_df, use_container_width=True, hide_index=True)
-
-elif view_type == "Add Member":
-    st.header("➕ Add New Team Member")
+    # Two columns: Create Team | Add Member
+    setup_col1, setup_col2 = st.columns(2)
     
-    with st.form("add_member_form"):
-        col1, col2 = st.columns(2)
+    with setup_col1:
+        st.subheader("➕ Create New Team")
+        with st.form("create_team_form"):
+            new_team_name = st.text_input("Team Name*", placeholder="e.g., Tickets, Chats, Support")
+            team_submit = st.form_submit_button("Create Team", use_container_width=True)
+            
+            if team_submit:
+                success, message = add_new_team(new_team_name)
+                if success:
+                    st.success(message)
+                    st.rerun()
+                else:
+                    st.error(message)
+    
+    with setup_col2:
+        st.subheader("➕ Add Team Member")
+        
+        if len(st.session_state.team_members) == 0:
+            st.warning("Create a team first before adding members")
+        else:
+            with st.form("add_member_form"):
+                member_team = st.selectbox("Select Team*", list(st.session_state.team_members.keys()))
+                member_name = st.text_input("Full Name*", placeholder="e.g., John Doe")
+                member_location = st.text_input("Location*", placeholder="e.g., Kenya, India, South Africa")
+                member_whmcs = st.text_input("WHMCS Access*", placeholder="e.g., HA and Cloud, DK")
+                
+                member_submit = st.form_submit_button("Add Member", use_container_width=True)
+                
+                if member_submit:
+                    if member_name and member_location and member_whmcs:
+                        member_data = {
+                            'name': member_name,
+                            'location': member_location,
+                            'whmcs': member_whmcs
+                        }
+                        success, message = add_team_member(member_team, member_data)
+                        if success:
+                            st.success(message)
+                            st.rerun()
+                        else:
+                            st.error(message)
+                    else:
+                        st.error("Please fill in all required fields")
+    
+    st.divider()
+    
+    # Display current teams and members
+    st.subheader("📋 Current Teams & Members")
+    
+    if len(st.session_state.team_members) == 0:
+        st.info("No teams created yet. Create your first team above!")
+    else:
+        for team_name, members in st.session_state.team_members.items():
+            with st.expander(f"**{team_name}** ({len(members)} members)", expanded=True):
+                # Team actions
+                team_action_col1, team_action_col2, team_action_col3 = st.columns([3, 1, 1])
+                
+                with team_action_col3:
+                    if st.button(f"🗑️ Delete Team", key=f"delete_team_{team_name}", type="secondary"):
+                        success, message = delete_team(team_name)
+                        if success:
+                            st.success(message)
+                            st.rerun()
+                        else:
+                            st.error(message)
+                
+                if len(members) == 0:
+                    st.info("No members in this team yet.")
+                else:
+                    # Create dataframe of members
+                    df_members = pd.DataFrame(members)
+                    st.dataframe(df_members, use_container_width=True, hide_index=True)
+                    
+                    # Remove member section
+                    st.markdown("**Remove Member:**")
+                    remove_cols = st.columns([3, 1])
+                    with remove_cols[0]:
+                        member_to_remove = st.selectbox(
+                            "Select member to remove",
+                            [m['name'] for m in members],
+                            key=f"remove_select_{team_name}"
+                        )
+                    with remove_cols[1]:
+                        if st.button("Remove", key=f"remove_btn_{team_name}", type="secondary"):
+                            success, message = remove_team_member(team_name, member_to_remove)
+                            if success:
+                                st.success(message)
+                                st.rerun()
+                            else:
+                                st.error(message)
+
+elif view_type == "Grid View":
+    st.header(f"📊 Shift Schedule - {selected_month} {selected_year}")
+    
+    if total_members == 0:
+        st.warning("No team members added yet. Go to 'Team Setup' to add members.")
+    else:
+        # Stats
+        col1, col2, col3, col4 = st.columns(4)
         
         with col1:
-            new_name = st.text_input("Full Name*")
-            new_team = st.selectbox("Select Team*", list(st.session_state.team_members.keys()))
-        
+            st.metric("Total Members", total_members)
         with col2:
-            new_location = st.text_input("Location*")
-            new_whmcs = st.text_input("WHMCS*")
+            st.metric("Total Teams", len(st.session_state.team_members))
+        with col3:
+            days = get_days_in_month(selected_year, st.session_state.current_month)
+            st.metric("Days in Month", days)
+        with col4:
+            # Count scheduled days
+            scheduled_count = sum(
+                sum(1 for shift in schedule if shift > 0)
+                for schedule in st.session_state.shift_schedule.values()
+            )
+            st.metric("Scheduled Shifts", scheduled_count)
         
-        submitted = st.form_submit_button("Add Member", use_container_width=True)
+        st.divider()
         
-        if submitted:
-            if new_name and new_team and new_location and new_whmcs:
-                new_member = {
-                    'name': new_name,
-                    'location': new_location,
-                    'whmcs': new_whmcs
+        # Team filter
+        team_filter = st.multiselect("Filter by Team", 
+                                    list(st.session_state.team_members.keys()), 
+                                    default=list(st.session_state.team_members.keys()))
+        
+        # Create schedule grid
+        days = get_days_in_month(selected_year, st.session_state.current_month)
+        
+        # Build dataframe for display
+        schedule_data = []
+        for team in team_filter:
+            if team in st.session_state.team_members:
+                for member in st.session_state.team_members[team]:
+                    row = {'Member': member['name'], 'Team': team, 'Location': member['location']}
+                    schedule = st.session_state.shift_schedule.get(member['name'], [0] * days)
+                    for day in range(1, days + 1):
+                        shift_type = schedule[day - 1] if day - 1 < len(schedule) else 0
+                        row[f'Day {day}'] = get_shift_label(shift_type)
+                    schedule_data.append(row)
+        
+        if schedule_data:
+            df = pd.DataFrame(schedule_data)
+            
+            # Style the dataframe
+            def color_cells(val):
+                if val == 'T':
+                    return 'background-color: #9333EA; color: white; font-weight: bold'
+                elif val == '8':
+                    return 'background-color: #F59E0B; color: white; font-weight: bold'
+                elif val == '12':
+                    return 'background-color: #3B82F6; color: white; font-weight: bold'
+                elif val == 'S':
+                    return 'background-color: #10B981; color: white; font-weight: bold'
+                elif val == 'O':
+                    return 'background-color: #06B6D4; color: white; font-weight: bold'
+                return ''
+            
+            styled_df = df.style.applymap(color_cells, subset=[col for col in df.columns if col.startswith('Day')])
+            st.dataframe(styled_df, use_container_width=True, height=600)
+            
+            # Shift editor
+            st.divider()
+            st.subheader("✏️ Edit Shifts")
+            
+            edit_col1, edit_col2, edit_col3, edit_col4 = st.columns(4)
+            
+            with edit_col1:
+                all_members = []
+                for team in team_filter:
+                    if team in st.session_state.team_members:
+                        all_members.extend([m['name'] for m in st.session_state.team_members[team]])
+                
+                selected_member = st.selectbox("Select Member", all_members)
+            
+            with edit_col2:
+                selected_day = st.number_input("Day", min_value=1, max_value=days, value=1)
+            
+            with edit_col3:
+                shift_options = {
+                    'Off': 0,
+                    'Regular (T)': 1,
+                    '8-Hour (8)': 2,
+                    '12-Hour (12)': 3,
+                    'Special (S)': 4,
+                    'Operations (O)': 5
                 }
-                st.session_state.team_members[new_team].append(new_member)
-                st.session_state.shift_schedule[new_name] = [0] * 31
-                st.success(f"✅ {new_name} added to {new_team} team successfully!")
-                st.rerun()
-            else:
-                st.error("❌ Please fill in all required fields")
-    
-    st.divider()
-    
-    # Remove member
-    st.subheader("🗑️ Remove Team Member")
-    
-    all_members = []
-    for team, members in st.session_state.team_members.items():
-        for member in members:
-            all_members.append(f"{member['name']} ({team})")
-    
-    if all_members:
-        member_to_remove = st.selectbox("Select member to remove", all_members)
+                selected_shift = st.selectbox("Shift Type", list(shift_options.keys()))
+            
+            with edit_col4:
+                st.write("")  # Spacing
+                st.write("")  # Spacing
+                if st.button("Update Shift", use_container_width=True):
+                    update_shift(selected_member, selected_day - 1, shift_options[selected_shift])
+                    st.success(f"✅ Updated {selected_member}'s shift for day {selected_day}")
+                    st.rerun()
+        else:
+            st.info("No team members selected. Please select teams from the filter above.")
         
-        if st.button("Remove Member", type="secondary", use_container_width=True):
-            member_name = member_to_remove.split(' (')[0]
-            team_name = member_to_remove.split('(')[1].replace(')', '')
+        # Legend
+        st.divider()
+        st.subheader("Legend")
+        legend_cols = st.columns(6)
+        with legend_cols[0]:
+            st.markdown("⬜ **Off** - Day Off")
+        with legend_cols[1]:
+            st.markdown("🟣 **T** - Regular Shift")
+        with legend_cols[2]:
+            st.markdown("🟠 **8** - 8-Hour Shift")
+        with legend_cols[3]:
+            st.markdown("🔵 **12** - 12-Hour Shift")
+        with legend_cols[4]:
+            st.markdown("🟢 **S** - Special Shift")
+        with legend_cols[5]:
+            st.markdown("🔷 **O** - Operations")
+
+elif view_type == "Card View":
+    st.header(f"📋 Team Overview - {selected_month} {selected_year}")
+    
+    if total_members == 0:
+        st.warning("No team members added yet. Go to 'Team Setup' to add members.")
+    else:
+        # Display all teams in card format
+        for team_name, members in st.session_state.team_members.items():
+            st.subheader(f"👥 {team_name}")
             
-            # Remove from team
-            st.session_state.team_members[team_name] = [
-                m for m in st.session_state.team_members[team_name] 
-                if m['name'] != member_name
-            ]
+            # Create columns for members (3 per row)
+            member_cols = st.columns(3)
             
-            # Remove from schedule
-            if member_name in st.session_state.shift_schedule:
-                del st.session_state.shift_schedule[member_name]
+            for idx, member in enumerate(members):
+                with member_cols[idx % 3]:
+                    st.markdown(f"""
+                    <div style='background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                padding: 15px; border-radius: 10px; margin-bottom: 10px;'>
+                        <h4 style='color: white; margin: 0;'>👤 {member['name']}</h4>
+                        <p style='color: white; margin: 5px 0; font-size: 14px;'>
+                            <strong>Location:</strong> {member['location']}</p>
+                        <p style='color: white; margin: 5px 0; font-size: 14px;'>
+                            <strong>WHMCS:</strong> {member['whmcs']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
             
-            st.success(f"✅ {member_name} removed successfully!")
-            st.rerun()
+            st.divider()
+
+elif view_type == "Team Summary":
+    st.header("📊 Team Statistics")
+    
+    if total_members == 0:
+        st.warning("No team members added yet. Go to 'Team Setup' to add members.")
+    else:
+        # Overall stats
+        col1, col2, col3, col4 = st.columns(4)
+        with col1:
+            st.metric("Total Teams", len(st.session_state.team_members))
+        with col2:
+            st.metric("Total Members", total_members)
+        with col3:
+            st.metric("Active Month", f"{selected_month} {selected_year}")
+        with col4:
+            scheduled_count = sum(
+                sum(1 for shift in schedule if shift > 0)
+                for schedule in st.session_state.shift_schedule.values()
+            )
+            st.metric("Total Scheduled Shifts", scheduled_count)
+        
+        st.divider()
+        
+        # Team breakdown with charts
+        for team, members in st.session_state.team_members.items():
+            with st.expander(f"**{team}** ({len(members)} members)", expanded=True):
+                if len(members) > 0:
+                    team_df = pd.DataFrame(members)
+                    
+                    # Display member table
+                    st.dataframe(team_df, use_container_width=True, hide_index=True)
+                    
+                    # Show shift statistics for this team
+                    st.markdown("**Shift Statistics:**")
+                    team_shifts = {}
+                    for member in members:
+                        schedule = st.session_state.shift_schedule.get(member['name'], [])
+                        total_shifts = sum(1 for shift in schedule if shift > 0)
+                        team_shifts[member['name']] = total_shifts
+                    
+                    if team_shifts:
+                        shift_df = pd.DataFrame(list(team_shifts.items()), columns=['Member', 'Scheduled Days'])
+                        st.bar_chart(shift_df.set_index('Member'))
+                else:
+                    st.info("No members in this team")
 
 # Footer
 st.divider()
 st.markdown("""
-<div style='text-align: center; color: #666; padding: 20px;'>
-    <p>Shift Schedule Manager v1.0 | Built with Streamlit 🎈</p>
-    <p>Export to Excel • Manage Teams • Track Shifts</p>
+<div style='text-align: center; color: #fff; padding: 20px;'>
+    <p><strong>Shift Schedule Manager v2.0</strong> | Blank Template with JSON Persistence</p>
+    <p>💾 All data automatically saved to: <code>data/team_members.json</code> & <code>data/shift_schedule.json</code></p>
+    <p>🔄 Changes persist between sessions | 📥 Export to Excel anytime</p>
 </div>
 """, unsafe_allow_html=True)
