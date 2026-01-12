@@ -1,40 +1,43 @@
-# 📅 Shift Schedule Manager
+# 📅 Shift Schedule Manager - Blank Template
 
-A comprehensive Streamlit application for managing team shift schedules with Excel export capabilities.
+A fully customizable Streamlit application for managing team shift schedules with **automatic JSON persistence**. Start from scratch and build your own team structure!
 
-## Features
+## 🌟 Key Features
 
-### 🎯 Core Features
-- **Grid View**: Full calendar view showing all team members and their shifts for the entire month
-- **Card View**: Detailed team member cards with role information and assignments
-- **Team Summary**: Statistical overview of all teams and members
-- **Member Management**: Add or remove team members dynamically
-- **Excel Export**: Generate professional Excel files in two formats:
-  - Grid View: Traditional calendar-style schedule
-  - Card View: Detailed weekly team assignment sheets
+### 💾 Automatic Data Persistence
+- **All changes are automatically saved** to JSON files
+- Data persists between sessions
+- Three JSON files store your data:
+  - `data/team_members.json` - Team structure and member details
+  - `data/shift_schedule.json` - All shift assignments
+  - `data/settings.json` - App preferences (month, year)
 
-### 👥 Team Management
-- **Tickets Team**: Support technicians handling ticket queue
-- **Chats Team**: Support technicians handling live chat
-- **Abuse Team**: Dedicated abuse handling specialists
-- **Early Shift/Nightshift**: Special shift workers
-- **Layover/Leave**: Team members on leave
-- **DomainKing**: Domain-specific support team
+### 👥 Complete Team Management
+- **Create unlimited teams** (e.g., Tickets, Chats, Support, Operations)
+- **Add/Remove members** with full details (Name, Location, WHMCS)
+- **Delete entire teams** when needed
+- **No pre-populated data** - start completely blank
 
-### 📊 Shift Types
-- **Regular (T)**: Standard ticket/chat shifts - Purple
-- **8-Hour (8)**: 8-hour extended shifts - Orange
-- **12-Hour (12)**: 12-hour long shifts - Blue
-- **Special (S)**: Special assignments - Green
-- **Operations (O)**: Operations tasks - Cyan
+### 📊 Multiple Views
+- **Team Setup**: Manage teams and members
+- **Grid View**: Full calendar with color-coded shifts
+- **Card View**: Visual team member cards
+- **Team Summary**: Statistics and charts
 
-## Installation
+### ✏️ Shift Management
+- **6 shift types**: Off, Regular (T), 8-Hour (8), 12-Hour (12), Special (S), Operations (O)
+- **Visual shift editor** in Grid View
+- **Color-coded** for easy identification
+- **Auto-saves** every change
 
-### Prerequisites
-- Python 3.8 or higher
-- pip package manager
+### 📥 Excel Export
+- **Grid Format**: Traditional calendar layout with all members
+- **Card Format**: Detailed weekly team assignment sheets
+- **Professional styling** with colors and borders
 
-### Setup Instructions
+## 🚀 Quick Start
+
+### Installation
 
 1. **Install dependencies**:
    ```bash
@@ -43,186 +46,308 @@ A comprehensive Streamlit application for managing team shift schedules with Exc
 
 2. **Run the application**:
    ```bash
-   streamlit run app.py
+   streamlit run app_blank.py
    ```
 
 3. **Access the app**:
-   Open your browser and navigate to `http://localhost:8501`
+   - Automatically opens at `http://localhost:8501`
+   - If not, manually navigate to that URL
 
-## Usage Guide
+## 📖 Complete Usage Guide
 
-### Navigation
-Use the sidebar to:
-- Select month and year
-- Choose view type (Grid, Card, Summary, Add Member)
-- Export schedules to Excel
+### Step 1: Create Your First Team
 
-### Adding Team Members
-1. Select "Add Member" from the view options
-2. Fill in the member details:
-   - Full Name
-   - Team assignment
-   - Location
-   - WHMCS access level
-3. Click "Add Member" to save
+1. Open the app
+2. Go to **"Team Setup"** view (selected by default)
+3. In the **"Create New Team"** section:
+   - Enter team name (e.g., "Tickets", "Support", "Operations")
+   - Click "Create Team"
+   - ✅ Team is created and **automatically saved** to `data/team_members.json`
 
-### Removing Team Members
-1. Go to "Add Member" view
-2. Scroll to "Remove Team Member" section
-3. Select the member from the dropdown
-4. Click "Remove Member" to confirm
+### Step 2: Add Team Members
 
-### Exporting to Excel
+1. Still in **"Team Setup"** view
+2. In the **"Add Team Member"** section:
+   - Select the team from dropdown
+   - Enter member name (e.g., "John Doe")
+   - Enter location (e.g., "Kenya", "India", "South Africa")
+   - Enter WHMCS access (e.g., "HA and Cloud", "DK")
+   - Click "Add Member"
+   - ✅ Member is added and **automatically saved**
 
-#### Grid Export
-1. Select desired month and year
-2. Click "Generate Grid Excel"
-3. Download the file
-4. File contains:
-   - All team members in rows
-   - Days of month in columns
-   - Color-coded shift types
-   - Frozen header row and member column
+**Repeat** for all your team members!
 
-#### Card Export
-1. Select week range (e.g., "12th-17th")
-2. Click "Generate Card Excel"
-3. Download the file
-4. File contains:
-   - Team sections (HostAfrica/Cloud, DomainKing)
-   - Member cards with details
-   - Role assignments (Tickets, Chats, Abuse, etc.)
-   - Special role sections (Early Shift, Nightshift, Layover, Leave)
+### Step 3: View Your Teams
 
-## File Structure
+Scroll down in **"Team Setup"** to see all your teams and members displayed in expandable sections.
+
+**You can**:
+- ✏️ Remove individual members
+- 🗑️ Delete entire teams
+- 📊 See member counts per team
+
+### Step 4: Assign Shifts
+
+1. Switch to **"Grid View"** (use sidebar)
+2. You'll see a calendar grid with all members
+3. Use the **"Edit Shifts"** section at the bottom:
+   - Select Member
+   - Select Day (1-31)
+   - Select Shift Type
+   - Click "Update Shift"
+   - ✅ Shift is **automatically saved** to `data/shift_schedule.json`
+
+**Shift Types**:
+- **Off** (⬜): Day off / Not scheduled
+- **Regular (T)** (🟣): Standard ticket/chat shift
+- **8-Hour (8)** (🟠): Extended 8-hour shift
+- **12-Hour (12)** (🔵): Long 12-hour shift
+- **Special (S)** (🟢): Special assignment
+- **Operations (O)** (🔷): Operations task
+
+### Step 5: Export to Excel
+
+1. Use the sidebar **"Export"** section
+2. **For Grid Export**:
+   - Click "Generate Grid Excel"
+   - Click "Download Grid Excel"
+   - Get a full calendar view with all members and shifts
+3. **For Card Export**:
+   - Select week range (e.g., "12th-17th")
+   - Click "Generate Card Excel"
+   - Click "Download Card Excel"
+   - Get detailed team cards for that week
+
+## 📂 File Structure
 
 ```
 shift-schedule-manager/
 │
-├── app.py                 # Main Streamlit application
-├── requirements.txt       # Python dependencies
-└── README.md             # This file
+├── app_blank.py          # Main application (blank template)
+├── requirements.txt      # Python dependencies
+├── README_BLANK.md       # This file
+│
+└── data/                 # Auto-created on first run
+    ├── team_members.json     # Your team structure (auto-saved)
+    ├── shift_schedule.json   # All shift assignments (auto-saved)
+    └── settings.json         # App preferences (auto-saved)
 ```
 
-## Features Breakdown
+## 💾 How Data Persistence Works
 
-### Grid View
-- **Responsive Table**: Displays all members and their shifts
-- **Team Filtering**: Filter by specific teams
-- **Color Coding**: Visual indication of shift types
-- **Statistics**: Real-time metrics (total members, team sizes, days in month)
+### Automatic Saving
+Every time you:
+- ✅ Create a team
+- ✅ Add a member
+- ✅ Remove a member
+- ✅ Delete a team
+- ✅ Update a shift
+- ✅ Change month/year
 
-### Card View
-- **Team Sections**: Organized by team type
-- **Member Details**: Full information for each team member
-- **Visual Hierarchy**: Clear separation between different teams
-- **Special Roles**: Dedicated sections for Abuse, Nightshift, etc.
+**The data is automatically saved to JSON files!**
 
-### Team Summary
-- **Overall Statistics**: Total teams, members, and active period
-- **Team Breakdown**: Expandable sections for each team
-- **Member Lists**: Tabular view of all members per team
+### Data Files Location
 
-### Excel Export Features
+All data is stored in the `data/` folder:
 
-#### Grid Format
-- Header row with day numbers
-- Member names in first and last columns
-- Color-coded cells matching shift types
-- Frozen panes for easy navigation
-- Professional formatting with borders
+**team_members.json** - Example structure:
+```json
+{
+  "Tickets": [
+    {
+      "name": "John Doe",
+      "location": "Kenya",
+      "whmcs": "HA and Cloud"
+    }
+  ],
+  "Chats": [
+    {
+      "name": "Jane Smith",
+      "location": "South Africa",
+      "whmcs": "HA"
+    }
+  ]
+}
+```
 
-#### Card Format
-- Title section with date range
-- HostAfrica/Cloud section:
-  - Tickets subsection (green background)
-  - Chats subsection (green background)
-- Special roles section (gray background):
-  - Abuse
-  - Early Shift
-  - Nightshift
-  - Layover
-  - Leave
-- DomainKing section (orange background)
-- Each member card includes:
-  - Name
-  - Title
-  - Location
-  - WHMCS access
+**shift_schedule.json** - Example structure:
+```json
+{
+  "John Doe": [0, 1, 1, 1, 1, 1, 0, 0, 1, 1, ...],
+  "Jane Smith": [1, 1, 1, 1, 1, 0, 0, 1, 1, 1, ...]
+}
+```
+*Array of 31 values (one per day): 0=Off, 1=Regular, 2=8hr, 3=12hr, 4=Special, 5=Operations*
 
-## Customization
+### Reload Data
 
-### Adding New Teams
-Edit the `team_members` initialization in `app.py`:
+If you manually edit the JSON files, click **"🔄 Reload Data"** in the sidebar to refresh the app.
 
+## 🎨 Customization
+
+### Adding Custom Shift Types
+
+Edit `app_blank.py` and modify:
+
+1. **Colors** in `get_shift_color()`:
 ```python
-if 'team_members' not in st.session_state:
-    st.session_state.team_members = {
-        'Your New Team': [
-            {'name': 'Member Name', 'location': 'Location', 'whmcs': 'Access Level'}
-        ]
+def get_shift_color(shift_type):
+    colors = {
+        0: '#FFFFFF',
+        1: '#9333EA',
+        # Add your custom color here
+        6: '#FF1493'  # Hot pink for example
     }
 ```
 
-### Adding New Shift Types
-Update these sections in `app.py`:
+2. **Labels** in `get_shift_label()`:
+```python
+def get_shift_label(shift_type):
+    labels = {
+        0: '',
+        1: 'T',
+        # Add your custom label
+        6: 'N'  # For night shift, for example
+    }
+```
 
-1. Color mapping in `get_shift_color()`
-2. Label mapping in `get_shift_label()`
-3. Color codes in Excel generation functions
+3. **Add to shift editor** in Grid View section (search for `shift_options`):
+```python
+shift_options = {
+    'Off': 0,
+    'Regular (T)': 1,
+    # Add your custom shift
+    'Night Shift (N)': 6
+}
+```
 
-### Modifying Excel Styles
-Adjust the openpyxl styling in:
-- `create_excel_grid()` - for grid format
-- `create_excel_card_view()` - for card format
+### Creating Default Teams
 
-## Troubleshooting
+If you want certain teams pre-created (but still blank), edit the `load_team_members()` function:
 
-### Common Issues
+```python
+def load_team_members():
+    if MEMBERS_FILE.exists():
+        # ... existing code ...
+    
+    # Return pre-created empty teams
+    return {
+        'Tickets': [],
+        'Chats': [],
+        'Support': []
+    }
+```
 
-**App won't start**:
-- Ensure all dependencies are installed: `pip install -r requirements.txt`
-- Check Python version: `python --version` (should be 3.8+)
+## 🔧 Troubleshooting
 
-**Excel files won't download**:
-- Check browser download settings
+### Issue: Data not saving
+
+**Solution**: 
+- Check that the `data/` folder exists in your app directory
 - Ensure you have write permissions
-- Try a different browser
+- Check the terminal for error messages
 
-**Data not saving**:
-- Streamlit uses session state - data resets on page reload
-- Export to Excel to save permanently
+### Issue: JSON file corrupted
 
-**Styling issues**:
-- Clear browser cache
-- Reload the page
-- Check browser compatibility (Chrome, Firefox, Safari recommended)
+**Solution**:
+1. Stop the app
+2. Delete the corrupted JSON file from `data/` folder
+3. Restart the app (it will create a new blank file)
 
-## Support
+### Issue: Can't see my changes
 
-For issues, questions, or feature requests:
-1. Check this README first
-2. Review the code comments in `app.py`
-3. Test with sample data
+**Solution**:
+- Click "🔄 Reload Data" in the sidebar
+- Or restart the app with `Ctrl+C` and `streamlit run app_blank.py`
 
-## Version History
+### Issue: App runs but shows errors
 
-### v1.0 (Current)
-- Initial release
-- Grid and Card view support
-- Excel export in two formats
-- Team member management
-- Multi-team support
-- Shift type color coding
+**Solution**:
+- Ensure all dependencies are installed: `pip install -r requirements.txt`
+- Check Python version: `python --version` (need 3.8+)
+- Delete `data/` folder and restart to reset everything
 
-## License
+## 📊 Example Workflow
+
+### Building a Complete Schedule
+
+1. **Week 1: Setup**
+   - Create 3 teams: Tickets, Chats, Support
+   - Add 5 members to Tickets
+   - Add 5 members to Chats
+   - Add 3 members to Support
+
+2. **Week 2: Schedule Planning**
+   - Switch to Grid View
+   - Assign Regular shifts (T) for weekdays
+   - Mark weekends as Off
+   - Add some 12-hour shifts for busy periods
+
+3. **Week 3: Review & Adjust**
+   - Check Team Summary for statistics
+   - Use Card View to verify team assignments
+   - Export Grid Excel for team leads
+   - Export Card Excel for weekly planning
+
+4. **Ongoing: Maintenance**
+   - Add new members as team grows
+   - Remove members who leave
+   - Update shifts as schedules change
+   - Everything auto-saves!
+
+## 🎯 Best Practices
+
+1. **Consistent Naming**: Use consistent location names (e.g., always "Kenya" not "kenya" or "KE")
+2. **Regular Exports**: Export to Excel weekly for backup
+3. **Backup JSON Files**: Periodically copy the `data/` folder as backup
+4. **Team Organization**: Create logical team names that match your organization
+5. **Shift Patterns**: Use consistent shift types for better reporting
+
+## 🆘 Support
+
+### Common Questions
+
+**Q: How many team members can I add?**
+A: Unlimited! The app scales to your needs.
+
+**Q: Can I use this for multiple months?**
+A: Yes! Change the month/year in the sidebar. The schedule is month-specific.
+
+**Q: How do I share my schedule?**
+A: Export to Excel and share the file, or share the JSON files from the `data/` folder.
+
+**Q: Can multiple people use this simultaneously?**
+A: Not recommended - it's a single-user app. For multi-user, export/share Excel files.
+
+**Q: What happens if I delete the data folder?**
+A: The app will start blank again. Your data will be gone (unless you have backups).
+
+## 📝 Version History
+
+### v2.0 - Blank Template (Current)
+- ✨ Completely blank starting template
+- ✨ Full JSON persistence for all data
+- ✨ Automatic saving on every change
+- ✨ Create/delete teams dynamically
+- ✨ Add/remove members with full control
+- ✨ Shift editor in Grid View
+- ✨ Data reload functionality
+- ✨ Professional Excel exports
+
+## 📜 License
 
 This project is provided as-is for shift scheduling management.
 
-## Credits
+## 🙏 Credits
 
 Built with:
 - [Streamlit](https://streamlit.io/) - Web framework
 - [Pandas](https://pandas.pydata.org/) - Data manipulation
-- [OpenPyXL](https://openpyxl.readthedocs.io/) - Excel file generation
+- [OpenPyXL](https://openpyxl.readthedocs.io/) - Excel generation
 - [NumPy](https://numpy.org/) - Numerical operations
+
+---
+
+**Need help?** Check the troubleshooting section or review the code comments in `app_blank.py`!
+
+**Happy Scheduling! 📅**
